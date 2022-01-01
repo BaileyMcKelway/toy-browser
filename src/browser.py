@@ -20,15 +20,15 @@ class Browser:
     
     def load(self, url):
         headers, body = http_req.Request(url).request()
-        display_list = layout.Layout(body).get_layout()
-        self.draw(display_list)
+        self.display_list = layout.Layout(body).display_list
+        self.draw()
         
-    def draw(self, display_list):
+    def draw(self):
         self.canvas.delete("all")
-        for x, y, word, times_font in display_list:
+        for x, y, word, times_font in self.display_list:
             if y > self.scroll + HEIGHT: continue
             if y + VSTEP < self.scroll: continue
-            self.canvas.create_text(x, y - self.scroll, text=word, font=times_font)
+            self.canvas.create_text(x, y - self.scroll, text=word, font=times_font, anchor="nw")
  
     def scrollup(self, e):
       if self.scroll - SCROLL_STEP >= 0:
