@@ -60,8 +60,8 @@ class Request:
             s = ctx.wrap_socket(s, server_hostname=host)
             
         s.connect((host, port))
-        s.send(("GET {} HTTP/1.0\r\n".format(path) +
-            "Host: {}\r\n\r\n".format(host)).encode("utf8"))
+        http_request = ("GET {} HTTP/1.0\r\n".format(path) + "Host: {}\r\n\r\n".format(host)).encode("utf8")
+        s.send(http_request)
       
         response, status, explanation = self.get_response(s)
         assert status == "200", "{}: {}".format(status, explanation)
