@@ -1,4 +1,5 @@
-import font
+from utils.font import build_times_font
+from utils.constants import WIDTH, HEIGHT, HSTEP, VSTEP, SCROLL_STEP
 
 class Text:
     def __init__(self, text):
@@ -11,6 +12,9 @@ class Tag:
 class Layout:
     def __init__(self, body):
         self.body = body
+        self.weight = "normal"
+        self.style = "roman"
+        self.size = 16
       
     def lex(self, body):
         out = []
@@ -36,21 +40,22 @@ class Layout:
         cursor_x, cursor_y = HSTEP, VSTEP
         for tok in tokens:
             if isinstance(tok, Text):
+                times_font = build_times_font(self.weight, self.style, self.size)
                 for word in tok.text.split():
-                    w = font.times.measure(word)
+                    w = times_font.measure(word)
                     if cursor_x + w > WIDTH - HSTEP:
-                        cursor_y += font.times.metrics("linespace") * 1.25
+                        cursor_y += times_font.metrics("linespace") * 1.25
                         cursor_x = HSTEP
-                    display_list.append((cursor_x, cursor_y, word))
-                    cursor_x += w + font.times.measure(" ")
+                    display_list.append((cursor_x, cursor_y, word, times_font))
+                    cursor_x += w + times_font.measure(" ")
             elif tok.tag == "i":
-                style = "italic"
+                self.style = "italic"
             elif tok.tag == "/i":
-                style = "roman"
+                self.style = "roman"
             elif tok.tag == "b":
-                weight = "bold"
+                self.weight = "bold"
             elif tok.tag == "/b":
-                weight = "normal"
+                self.weight = "normal"
         return display_list
     
     def get_layout(self):

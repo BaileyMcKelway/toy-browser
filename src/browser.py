@@ -1,11 +1,7 @@
 import http_req
 import layout
-import font
 import tkinter
-
-WIDTH, HEIGHT = 800, 600
-HSTEP, VSTEP = 13, 18
-SCROLL_STEP = 100
+from utils.constants import WIDTH, HEIGHT, HSTEP, VSTEP, SCROLL_STEP
 
 class Browser:
     def __init__(self):
@@ -21,20 +17,18 @@ class Browser:
         self.window.bind("<Down>", self.scrolldown)
         self.window.bind("<Up>", self.scrollup)
         self.window.bind("<MouseWheel>", self.on_mousewheel)
-        
-        self.layout = layout.Layout()
     
     def load(self, url):
         headers, body = http_req.Request(url).request()
-        display_list = self.Layout(body).get_layout()
+        display_list = layout.Layout(body).get_layout()
         self.draw(display_list)
         
     def draw(self, display_list):
         self.canvas.delete("all")
-        for x, y, c in display_list:
+        for x, y, word, times_font in display_list:
             if y > self.scroll + HEIGHT: continue
             if y + VSTEP < self.scroll: continue
-            self.canvas.create_text(x, y - self.scroll, text=c, font=font.times)
+            self.canvas.create_text(x, y - self.scroll, text=word, font=times_font)
  
     def scrollup(self, e):
       if self.scroll - SCROLL_STEP >= 0:
