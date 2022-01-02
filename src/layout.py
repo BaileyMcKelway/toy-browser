@@ -18,6 +18,9 @@ class Layout:
         self.cursor_x = HSTEP
         self.cursor_y = VSTEP
         
+        self.line = []
+        self.flush()
+        
         self.tokens = self.lex(body)
         self.display_list = []
         for tok in self.tokens:
@@ -53,13 +56,39 @@ class Layout:
             self.weight = "bold"
         elif tok.tag == "/b":
             self.weight = "normal"
-    
+        elif tok.tag == "small":
+            self.size -= 2
+        elif tok.tag == "/small":
+            self.size += 2
+        elif tok.tag == "big":
+            self.size += 4
+        elif tok.tag == "/big":
+            self.size -= 4
+        elif tok.tag == "br":
+            self.flush()
+        elif tok.tag == "/p":
+            self.flush()
+            self.cursor_y += VSTEP
+                
     def text(self, tok):
-        times_font = build_times_font(self.weight, self.style, self.size)
+        self.times_font = build_times_font(self.weight, self.style, self.size)
         for word in tok.text.split():
-            w = times_font.measure(word)
+            w = self.times_font.measure(word)
             if self.cursor_x + w > WIDTH - HSTEP:
-                self.cursor_y += times_font.metrics("linespace") * 1.25
-                self.cursor_x = HSTEP
-            self.display_list.append((self.cursor_x, self.cursor_y, word, times_font))
-            self.cursor_x += w + times_font.measure(" ")
+                self.flush()
+            self.line.append((self.cursor_x, word, self.times_font))
+            self.cursor_x += w + self.times_font.measure(" ")
+            
+    def flush(self):
+        if not self.line: return
+        metrics = [self.times_font.metrics() for x, word, font in self.line]
+        max_ascent = max([metric["ascent"] for metric in metrics])
+        baseline = self.cursor_y + 1.25 * max_ascent
+        for x, word, times_font in self.line:
+            y = baseline - times_font.metrics("ascent")
+            self.display_list.append((x, y, word, times_font))
+        self.cursor_x = HSTEP
+        self.line = []
+        max_descent = max([metric["descent"] for metric in metrics])
+        self.cursor_y = baseline + 1.25 * max_descent
+        
