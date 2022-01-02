@@ -1,4 +1,4 @@
-from utils.font import build_times_font
+from utils.font import build_times_font, is_open_title, is_closing_title
 from utils.constants import WIDTH, HEIGHT, HSTEP, VSTEP, SCROLL_STEP
 
 class Text:
@@ -37,6 +37,9 @@ class Layout:
                 text = ""
             elif c == ">":
                 in_tag = False
+                if text.startswith('body'):
+                    is_body = True
+                    out = []
                 out.append(Tag(text))
                 text = ""
             else:
@@ -56,20 +59,18 @@ class Layout:
             self.weight = "bold"
         elif tok.tag == "/b":
             self.weight = "normal"
-        elif tok.tag == "small":
-            self.size -= 2
-        elif tok.tag == "/small":
-            self.size += 2
-        elif tok.tag == "big":
-            self.size += 4
-        elif tok.tag == "/big":
-            self.size -= 4
         elif tok.tag == "br":
             self.flush()
         elif tok.tag == "/p":
             self.flush()
             self.cursor_y += VSTEP
-                
+        elif is_open_title(tok):
+            self.flush()
+            self.size += 4
+        elif is_closing_title(tok):
+            self.flush()
+            self.size -= 4
+        
     def text(self, tok):
         self.times_font = build_times_font(self.weight, self.style, self.size)
         for word in tok.text.split():
