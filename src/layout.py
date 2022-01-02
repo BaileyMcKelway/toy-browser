@@ -1,5 +1,6 @@
 from utils.font import build_times_font, is_open_title, is_closing_title
 from utils.constants import WIDTH, HEIGHT, HSTEP, VSTEP, SCROLL_STEP
+import unicodedata as ud
 
 class Text:
     def __init__(self, text):
@@ -74,6 +75,7 @@ class Layout:
     def text(self, tok):
         self.times_font = build_times_font(self.weight, self.style, self.size)
         for word in tok.text.split():
+            word = ud.normalize('NFD', word)
             w = self.times_font.measure(word)
             if self.cursor_x + w > WIDTH - HSTEP:
                 self.flush()

@@ -20,20 +20,24 @@ class Request:
     def build_headers(self, response):
         headers = {}
         while True:
-            line = response.readline()
+            line = response.readline().decode()
             if line == "\r\n": break
             header, value = line.split(":", 1)
             headers[header.lower()] = value.strip()
         return headers
     
     def build_body(self, response, headers):
-        body = response.read()
+        encoding = 'utf-8'
+        if "charset" in headers.get("content-type"):
+            mime, charset = headers["content-type"].split(';')
+            encoding = charset.split('=')[1].strip().lower()
+        body = response.read().decode(encoding='utf-8')
         body.replace("&lt;", "<").replace("&gt;", ">")
         return body
         
     def get_response(self, s):
-      response = s.makefile("r", encoding="utf8", newline="\r\n")
-      statusline = response.readline()
+      response = s.makefile("rb", encoding="utf8", newline="\r\n")
+      statusline = response.readline().decode()
       version, status, explanation = statusline.split(" ", 2)
       return (response, status, explanation)
       
@@ -60,7 +64,13 @@ class Request:
             s = ctx.wrap_socket(s, server_hostname=host)
             
         s.connect((host, port))
-        http_request = ("GET {} HTTP/1.0\r\n".format(path) + "Host: {}\r\n\r\n".format(host)).encode("utf8")
+        http_request = (
+            b"GET " + bytes(path, 'utf-8') + b" HTTP/1.1\r\n" + 
+            b"Host: " + bytes(host, 'utf-8') + b"\r\n" + 
+            b"Connection: close\r\n" +
+            b"User-Agent: Manyk\r\n" +
+            b"\r\n"
+        )
         s.send(http_request)
       
         response, status, explanation = self.get_response(s)
