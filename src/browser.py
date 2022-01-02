@@ -7,6 +7,7 @@ from utils.constants import WIDTH, HEIGHT, HSTEP, VSTEP, SCROLL_STEP
 class Browser:
     def __init__(self):
         self.window = tkinter.Tk()
+        self.window.title("Toy Browser 🧸")
         self.canvas = tkinter.Canvas(
           self.window,
           bg='white',
@@ -18,7 +19,7 @@ class Browser:
         self.scroll = 0
         self.focus = None
         self.address_bar = ""
-        self.address_bar_font = build_times_font("normal", "roman", 16)
+        self.address_bar_font = build_times_font("bold", "roman", 24)
         
         self.window.bind("<Down>", self.scrolldown)
         self.window.bind("<Up>", self.scrollup)
@@ -66,7 +67,8 @@ class Browser:
     def build_browser_template(self):
         self.canvas.delete("all")
         self.canvas.create_rectangle(0, 0, WIDTH, 100, fill="white", outline="black")
-        self.canvas.create_rectangle(40, 50, WIDTH - 10, 90, outline="black", width=1)
+        self.canvas.create_rectangle(40, 50, WIDTH - 10, 90, outline="white", width=1)
+        self.canvas.create_line(20, 90, WIDTH - 20, 90, fill="black")
     
     def draw(self):
         self.build_browser_template()
@@ -96,9 +98,6 @@ class Browser:
         else:
             self.scrollup(e)
         
-
-
-
 if __name__ == "__main__":
     import sys
     Browser().load(sys.argv[1])
